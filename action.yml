@@ -1,0 +1,88 @@
+name: Add APT repository and key
+description: Add an APT repository (with its key) for installing packages
+
+inputs:
+  uri:
+    description: URI of the APT repository
+    required: true
+  key:
+    description: URL or path to the GPG public key
+    default: ''
+  suite:
+    description: Suite of the APT repository
+    default: ''
+  cache:
+    description: Cache any downloaded prerequisite packages
+    default: true
+
+branding:
+  icon: plus-square
+  color: orange
+
+runs:
+  using: "composite"
+  steps:
+    - name: Prepare
+      id: prep
+      run: |
+        prerequisites=""
+
+        if [[ ${{ inputs.uri }} == "https://"* ]] || [[ ${{ inputs.key }} == "https://"* ]]; then
+          prerequisites+=" ca-certificates"
+        fi
+
+        if [[ ${{ inputs.key }} == "http://"* ]] || [[ ${{ inputs.key }} == "https://"* ]]; then
+          prerequisites+=" wget"
+        fi
+
+        echo "prerequisites=$prerequisites" >> "$GITHUB_OUTPUT"
+      shell: bash
+    - name: Install prerequisites
+      if: ${{ steps.prep.outputs.prerequisites }}
+      uses: gerlero/apt-install@v1
+      with:
+        packages: ${{ steps.prep.outputs.prerequisites }}
+        upgrade: false
+        install-recommends: false
+        cache: ${{ inputs.cache }}
+    - name: Begin
+      run: |
+        sudo() {
+          if [ $(id -u) -eq 0 ]; then
+            "$@"
+          else
+            command sudo "$@"
+          fi
+        }
+
+        if [ -n "${{ inputs.key }}" ]; then
+          echo ::group::Add APT key
+          staging_key=/usr/share/keyrings/add-apt-repository.asc
+
+          if [[ ${{ inputs.key }} == "http://"* ]] || [[ ${{ inputs.key }} == "https://"* ]]; then
+            sudo wget -O "$staging_key" -- ${{ inputs.key }}
+          else
+            sudo cp ${{ inputs.key }} "$staging_key"
+          fi
+
+          final_key=/usr/share/keyrings/add-apt-repository-$(sha256sum "$staging_key" | cut -d' ' -f1).asc
+          sudo mv "$staging_key" "$final_key"
+          echo ::endgroup::
+        fi
+
+        echo ::group::Add APT repository
+        if [ -n "${{ inputs.key }}" ]; then
+          options=" [signed-by=$final_key]"
+        else
+          options=""
+        fi
+
+        if [ -n "${{ inputs.suite }}" ]; then
+          suite=${{ inputs.suite }}
+        else
+          suite=$(sed -ne 's/^VERSION_CODENAME=//p' /etc/os-release)
+        fi
+
+        echo "deb$options ${{ inputs.uri }} $suite main" | sudo tee -a /etc/apt/sources.list.d/add-apt-repository.list
+        echo ::endgroup::
+      shell: bash
