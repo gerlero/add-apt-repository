@@ -27,11 +27,11 @@ runs:
       run: |
         prerequisites=""
 
-        if [[ ${{ inputs.uri }} == "https://"* ]] || [[ ${{ inputs.key }} == "https://"* ]]; then
+        if [[ "${{ inputs.uri }}" == "https://"* ]] || [[ "${{ inputs.key }}" == "https://"* ]]; then
           prerequisites+=" ca-certificates"
         fi
 
-        if [[ ${{ inputs.key }} == "http://"* ]] || [[ ${{ inputs.key }} == "https://"* ]]; then
+        if [[ "${{ inputs.key }}" == "http://"* ]] || [[ "${{ inputs.key }}" == "https://"* ]]; then
           prerequisites+=" wget"
         fi
 
