@@ -57,15 +57,17 @@ runs:
 
         if [ -n "${{ inputs.key }}" ]; then
           echo ::group::Add APT key
-          staging_key=/usr/share/keyrings/add-apt-repository.asc
+          mkdir -p "${{ runner.temp }}"
+          staging_key="${{ runner.temp }}/add-apt-repository.asc"
 
           if [[ ${{ inputs.key }} == "http://"* ]] || [[ ${{ inputs.key }} == "https://"* ]]; then
-            sudo wget -O "$staging_key" -- ${{ inputs.key }}
+            wget -O "$staging_key" -- "${{ inputs.key }}"
           else
-            sudo cp ${{ inputs.key }} "$staging_key"
+            cp "${{ inputs.key }}"  "$staging_key"
           fi
 
-          final_key=/usr/share/keyrings/add-apt-repository-$(sha256sum "$staging_key" | cut -d' ' -f1).asc
+          sudo mkdir -p /etc/apt/keyrings
+          final_key=/etc/apt/keyrings/add-apt-repository-$(sha256sum "$staging_key" | cut -d' ' -f1).asc
           sudo mv "$staging_key" "$final_key"
           echo ::endgroup::
         fi
