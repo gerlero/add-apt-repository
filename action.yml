@@ -83,6 +83,9 @@ runs:
           suite=$(sed -ne 's/^VERSION_CODENAME=//p' /etc/os-release)
         fi
 
-        echo "deb$options ${{ inputs.uri }} $suite main" | sudo tee -a /etc/apt/sources.list.d/add-apt-repository.list
+        line="deb$options ${{ inputs.uri }} $suite main"
+        file=/etc/apt/sources.list.d/add-apt-repository.list
+        grep --quiet --line-regexp --fixed-strings "$line" "$file" \
+          || echo "$line" | sudo tee --append "$file"
         echo ::endgroup::
       shell: bash
