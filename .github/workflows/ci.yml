@@ -15,7 +15,7 @@ jobs:
     container: ${{ matrix.container }}
     strategy:
       matrix:
-        os: [ubuntu-24.04, ubuntu-22.04]
+        os: [ubuntu-24.04, ubuntu-22.04, ubuntu-24.04-arm, ubuntu-22.04-arm]
         include:
           - os: ubuntu-latest
             container: ubuntu:24.04
@@ -38,6 +38,7 @@ jobs:
           key: https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           suite: all
       - name: Install a package
+        if: runner.arch != 'ARM64'
         uses: gerlero/apt-install@v1
         with:
           packages: intel-oneapi-mpi-devel
