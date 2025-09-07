@@ -26,9 +26,9 @@ jobs:
           - os: ubuntu-latest
             container: ubuntu:20.04
           - os: ubuntu-latest
-            container: debian:bullseye
+            container: debian:bookworm
           - os: ubuntu-latest
-            container: debian:buster
+            container: debian:bullseye
       fail-fast: false
     steps:
       - name: Checkout
