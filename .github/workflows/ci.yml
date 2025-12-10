@@ -29,6 +29,16 @@ jobs:
             container: debian:bookworm
           - os: ubuntu-latest
             container: debian:bullseye
+          - os: ubuntu-24.04-arm
+            container: ubuntu:24.04
+          - os: ubuntu-24.04-arm
+            container: ubuntu:22.04
+          - os: ubuntu-24.04-arm
+            container: ubuntu:20.04
+          - os: ubuntu-24.04-arm
+            container: debian:bookworm
+          - os: ubuntu-24.04-arm
+            container: debian:bullseye
       fail-fast: false
     steps:
       - name: Checkout
