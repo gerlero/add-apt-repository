@@ -31,6 +31,10 @@ The URL or path to the GPG public key file to use for authenticating the reposit
 
 The suite of the APT repository to add. Default: the codename of the distribution.
 
+### `component`
+
+The component of the APT repository to add. Default: `main`.
+
 ### `cache`
 
 Whether to cache any installed prerequisite packages between runs. Default: `true`.

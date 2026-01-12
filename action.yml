@@ -11,6 +11,9 @@ inputs:
   suite:
     description: Suite of the APT repository
     default: ''
+  component:
+    description: Component of the APT repository
+    default: 'main'
   cache:
     description: Cache any downloaded prerequisite packages
     default: true
@@ -85,7 +88,9 @@ runs:
           suite=$(sed -ne 's/^VERSION_CODENAME=//p' /etc/os-release)
         fi
 
-        line="deb$options ${{ inputs.uri }} $suite main"
+        component=${{ inputs.component }}
+  
+        line="deb$options ${{ inputs.uri }} $suite ${component:+ $component}"
         file=/etc/apt/sources.list.d/add-apt-repository.list
         grep --quiet --line-regexp --fixed-strings "$line" "$file" \
           || echo "$line" | sudo tee --append "$file"
