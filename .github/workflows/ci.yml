@@ -20,11 +20,15 @@ jobs:
         os: [ubuntu-24.04, ubuntu-22.04, ubuntu-24.04-arm, ubuntu-22.04-arm]
         include:
           - os: ubuntu-latest
+            container: ubuntu:26.04
+          - os: ubuntu-latest
             container: ubuntu:24.04
           - os: ubuntu-latest
             container: ubuntu:22.04
           - os: ubuntu-latest
             container: ubuntu:20.04
+          - os: ubuntu-latest
+            container: debian:trixie
           - os: ubuntu-latest
             container: debian:bookworm
           - os: ubuntu-latest
