@@ -31,8 +31,6 @@ jobs:
             container: debian:trixie
           - os: ubuntu-latest
             container: debian:bookworm
-          - os: ubuntu-latest
-            container: debian:bullseye
       fail-fast: false
     steps:
       - name: Checkout
