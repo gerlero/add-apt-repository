@@ -12,7 +12,6 @@ GitHub Action to add an APT repository (with its key) to the list of package sou
   with:
     uri: http://example.com/repo
     key: url_or_path_to_key
-    architectures: amd64
 - uses: gerlero/apt-install@v1
   with:
     packages: package
