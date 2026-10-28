@@ -37,7 +37,7 @@ The component of the APT repository to add. Default: `main`.
 
 ### `architectures`
 
-Architecture name or whitespace-separated list of architectures to fetch from the repository, e.g. `amd64`. Sets the `arch` option in the APT source entry. Default: none (use APT's configured architectures).
+Architecture name or whitespace-separated list of architectures to fetch from the repository, e.g. `amd64`. Sets the `Architectures` field in the APT source entry. Default: none (use APT's configured architectures).
 
 ### `cache`
 
