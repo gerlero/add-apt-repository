@@ -12,6 +12,7 @@ GitHub Action to add an APT repository (with its key) to the list of package sou
   with:
     uri: http://example.com/repo
     key: url_or_path_to_key
+    architectures: amd64
 - uses: gerlero/apt-install@v1
   with:
     packages: package
@@ -34,6 +35,10 @@ The suite of the APT repository to add. Default: the codename of the distributio
 ### `component`
 
 The component of the APT repository to add. Default: `main`.
+
+### `architectures`
+
+Architecure name or whitespace-separated list of architectures to fetch from the repository, e.g. `amd64`. Sets the `arch` option in the APT source entry. Default: none (use APT's configured architectures).
 
 ### `cache`
 

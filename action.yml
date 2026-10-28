@@ -14,6 +14,9 @@ inputs:
   component:
     description: Component of the APT repository
     default: 'main'
+  architectures:
+    description: Architectures to fetch from the APT repository
+    default: ''
   cache:
     description: Cache any downloaded prerequisite packages
     default: true
@@ -49,6 +52,8 @@ runs:
         install-recommends: false
         cache: ${{ inputs.cache }}
     - name: Begin
+      env:
+        REPOSITORY_ARCH: ${{ inputs.architectures }}
       run: |
         sudo() {
           if [ $(id -u) -eq 0 ]; then
@@ -63,7 +68,7 @@ runs:
           mkdir -p "${{ runner.temp }}"
           staging_key="${{ runner.temp }}/add-apt-repository.asc"
 
-          if [[ ${{ inputs.key }} == "http://"* ]] || [[ ${{ inputs.key }} == "https://"* ]]; then
+          if [[ "${{ inputs.key }}" == "http://"* ]] || [[ "${{ inputs.key }}" == "https://"* ]]; then
             wget -O "$staging_key" -- "${{ inputs.key }}"
           else
             cp "${{ inputs.key }}"  "$staging_key"
@@ -76,10 +81,17 @@ runs:
         fi
 
         echo ::group::Add APT repository
+        options=""
         if [ -n "${{ inputs.key }}" ]; then
-          options=" [signed-by=$final_key]"
-        else
-          options=""
+          options="signed-by=$final_key"
+        fi
+
+        arch=$(printf '%s' "$REPOSITORY_ARCH" | tr -s '[:space:]' ',')
+        arch=${arch#,}
+        arch=${arch%,}
+
+        if [ -n "$arch" ]; then
+          options+="${options:+ }arch=$arch"
         fi
 
         if [ -n "${{ inputs.suite }}" ]; then
@@ -90,7 +102,7 @@ runs:
 
         component=${{ inputs.component }}
   
-        line="deb$options ${{ inputs.uri }} $suite ${component:+ $component}"
+        line="deb${options:+ [$options]} ${{ inputs.uri }} $suite ${component:+ $component}"
         file=/etc/apt/sources.list.d/add-apt-repository.list
         grep --quiet --line-regexp --fixed-strings "$line" "$file" \
           || echo "$line" | sudo tee --append "$file"
