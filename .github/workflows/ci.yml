@@ -42,6 +42,29 @@ jobs:
           key: https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           suite: all
           architectures: amd64
+      - name: Add the same repository again
+        uses: ./
+        with:
+          uri: https://apt.repos.intel.com/oneapi
+          key: https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+          suite: all
+          architectures: amd64
+      - name: Verify repository configuration
+        run: |
+          shopt -s nullglob
+          sources=(/etc/apt/sources.list.d/add-apt-repository-*.sources)
+          test "${#sources[@]}" -eq 1
+          file=${sources[0]}
+          grep -Fxq 'Types: deb' "$file"
+          grep -Fxq 'URIs: https://apt.repos.intel.com/oneapi' "$file"
+          grep -Fxq 'Suites: all' "$file"
+          grep -Fxq 'Components: main' "$file"
+          grep -Fxq 'Architectures: amd64' "$file"
+          key=$(sed -n 's/^Signed-By: //p' "$file")
+          test -n "$key"
+          test -r "$key"
+          test ! -e /etc/apt/sources.list.d/add-apt-repository.list
+        shell: bash
       - name: Install a package
         if: runner.arch != 'ARM64'
         uses: gerlero/apt-install@v1

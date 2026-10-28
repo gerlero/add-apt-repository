@@ -53,7 +53,7 @@ runs:
         cache: ${{ inputs.cache }}
     - name: Begin
       env:
-        REPOSITORY_ARCH: ${{ inputs.architectures }}
+        ARCHITECTURES: ${{ inputs.architectures }}
       run: |
         sudo() {
           if [ $(id -u) -eq 0 ]; then
@@ -81,30 +81,32 @@ runs:
         fi
 
         echo ::group::Add APT repository
-        options=""
-        if [ -n "${{ inputs.key }}" ]; then
-          options="signed-by=$final_key"
-        fi
-
-        arch=$(printf '%s' "$REPOSITORY_ARCH" | tr -s '[:space:]' ',')
-        arch=${arch#,}
-        arch=${arch%,}
-
-        if [ -n "$arch" ]; then
-          options+="${options:+ }arch=$arch"
-        fi
+        arch=$(printf '%s' "$ARCHITECTURES" | tr -s '[:space:],' ' ')
+        arch=${arch# }
+        arch=${arch% }
 
         if [ -n "${{ inputs.suite }}" ]; then
-          suite=${{ inputs.suite }}
+          suite="${{ inputs.suite }}"
         else
           suite=$(sed -ne 's/^VERSION_CODENAME=//p' /etc/os-release)
         fi
 
-        component=${{ inputs.component }}
-  
-        line="deb${options:+ [$options]} ${{ inputs.uri }} $suite ${component:+ $component}"
-        file=/etc/apt/sources.list.d/add-apt-repository.list
-        grep --quiet --line-regexp --fixed-strings "$line" "$file" \
-          || echo "$line" | sudo tee --append "$file"
+        component="${{ inputs.component }}"
+
+        entry=$(
+          printf 'Types: deb\nURIs: %s\nSuites: %s\n' "${{ inputs.uri }}" "$suite"
+          if [ -n "$component" ]; then
+            printf 'Components: %s\n' "$component"
+          fi
+          if [ -n "$arch" ]; then
+            printf 'Architectures: %s\n' "$arch"
+          fi
+          if [ -n "${{ inputs.key }}" ]; then
+            printf 'Signed-By: %s\n' "$final_key"
+          fi
+        )
+
+        file=/etc/apt/sources.list.d/add-apt-repository-$(printf '%s\n' "$entry" | sha256sum | cut -d' ' -f1).sources
+        printf '%s\n' "$entry" | sudo tee "$file"
         echo ::endgroup::
       shell: bash
