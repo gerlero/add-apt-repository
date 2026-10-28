@@ -41,6 +41,7 @@ jobs:
           uri: https://apt.repos.intel.com/oneapi
           key: https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           suite: all
+          architectures: amd64
       - name: Install a package
         if: runner.arch != 'ARM64'
         uses: gerlero/apt-install@v1
